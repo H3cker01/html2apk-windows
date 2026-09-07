@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>Html2Apk</AssemblyName>
+    <RootNamespace>Html2Apk</RootNamespace>
+    <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <!-- Bundle tools folder into output -->
+  <ItemGroup>
+    <Content Include="Assets\tools\**\*" CopyToOutputDirectory="PreserveNewest"/>
+  </ItemGroup>
+
+  <!-- System.Drawing for icon resizing -->
+  <ItemGroup>
+    <PackageReference Include="System.Drawing.Common" Version="8.0.0"/>
+  </ItemGroup>
+</Project>
