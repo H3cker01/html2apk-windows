@@ -1,0 +1,219 @@
+<Window x:Class="Html2Apk.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="HTML2Apk" Height="720" Width="1000"
+        WindowStartupLocation="CenterScreen"
+        Background="#1A1A2E" Foreground="White">
+    <Window.Resources>
+        <Style x:Key="SideBtn" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="#AAAACC"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="16,12"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#2A2A4E"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="ActiveSideBtn" TargetType="Button" BasedOn="{StaticResource SideBtn}">
+            <Setter Property="Background" Value="#7C6AF7"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style x:Key="PrimaryBtn" TargetType="Button">
+            <Setter Property="Background" Value="#7C6AF7"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style x:Key="InputBox" TargetType="TextBox">
+            <Setter Property="Background" Value="#2A2A4E"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#3A3A6E"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="CaretBrush" Value="White"/>
+        </Style>
+        <Style x:Key="LabelText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#AAAACC"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Margin" Value="0,10,0,3"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Sidebar -->
+        <Border Grid.Column="0" Background="#12122A" Padding="0,16">
+            <StackPanel>
+                <TextBlock Text="HTML2Apk" FontSize="20" FontWeight="Bold"
+                           Foreground="#7C6AF7" Margin="16,0,0,24"/>
+                <Button x:Name="BtnGeneral"      Content="⚙️  General"     Style="{StaticResource ActiveSideBtn}" Click="Nav_Click"/>
+                <Button x:Name="BtnPermissions"  Content="🔒  Permissions"  Style="{StaticResource SideBtn}"      Click="Nav_Click"/>
+                <Button x:Name="BtnAdMob"        Content="📢  AdMob"        Style="{StaticResource SideBtn}"      Click="Nav_Click"/>
+                <Button x:Name="BtnKeystore"     Content="🔑  Keystore"     Style="{StaticResource SideBtn}"      Click="Nav_Click"/>
+                <Button x:Name="BtnOutput"       Content="📦  Output"       Style="{StaticResource SideBtn}"      Click="Nav_Click"/>
+                <Separator Background="#2A2A4E" Margin="16,16"/>
+                <Button x:Name="BtnBuild" Content="▶  Build APK"
+                        Style="{StaticResource PrimaryBtn}" Margin="12,0" Click="BtnBuild_Click"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Main content area -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="180"/>
+            </Grid.RowDefinitions>
+
+            <!-- Pages -->
+            <ScrollViewer Grid.Row="0" Padding="24" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+
+                    <!-- GENERAL PAGE -->
+                    <StackPanel x:Name="PageGeneral" Visibility="Visible">
+                        <TextBlock Text="General Settings" FontSize="18" FontWeight="Bold" Margin="0,0,0,16"/>
+                        <TextBlock Text="App Name" Style="{StaticResource LabelText}"/>
+                        <TextBox x:Name="TxtAppName" Style="{StaticResource InputBox}" Text="MyApp"/>
+                        <TextBlock Text="Package Name" Style="{StaticResource LabelText}"/>
+                        <TextBox x:Name="TxtPackage" Style="{StaticResource InputBox}" Text="com.example.myapp"/>
+                        <TextBlock Text="HTML File" Style="{StaticResource LabelText}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="TxtHtml" Style="{StaticResource InputBox}" IsReadOnly="True"/>
+                            <Button Grid.Column="1" Content="Browse" Style="{StaticResource PrimaryBtn}"
+                                    Margin="8,0,0,0" Click="BrowseHtml_Click"/>
+                        </Grid>
+                        <TextBlock Text="App Icon (PNG)" Style="{StaticResource LabelText}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="TxtIcon" Style="{StaticResource InputBox}" IsReadOnly="True"/>
+                            <Button Grid.Column="1" Content="Browse" Style="{StaticResource PrimaryBtn}"
+                                    Margin="8,0,0,0" Click="BrowseIcon_Click"/>
+                        </Grid>
+                        <TextBlock Text="Build Output" Style="{StaticResource LabelText}"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="TxtOutput" Style="{StaticResource InputBox}" IsReadOnly="True"/>
+                            <Button Grid.Column="1" Content="Browse" Style="{StaticResource PrimaryBtn}"
+                                    Margin="8,0,0,0" Click="BrowseOutput_Click"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <!-- PERMISSIONS PAGE -->
+                    <StackPanel x:Name="PagePermissions" Visibility="Collapsed">
+                        <TextBlock Text="Permissions" FontSize="18" FontWeight="Bold" Margin="0,0,0,16"/>
+                        <TextBlock Text="Select permissions to include in the manifest:" Style="{StaticResource LabelText}"/>
+                        <WrapPanel x:Name="PermPanel" Margin="0,8"/>
+                    </StackPanel>
+
+                    <!-- ADMOB PAGE -->
+                    <StackPanel x:Name="PageAdMob" Visibility="Collapsed">
+                        <TextBlock Text="AdMob Integration" FontSize="18" FontWeight="Bold" Margin="0,0,0,16"/>
+                        <CheckBox x:Name="ChkAdMob" Content="Enable AdMob" Foreground="White"
+                                  FontSize="14" Checked="ChkAdMob_Changed" Unchecked="ChkAdMob_Changed"/>
+                        <StackPanel x:Name="AdMobFields" IsEnabled="False" Opacity="0.5" Margin="0,12,0,0">
+                            <TextBlock Text="AdMob App ID" Style="{StaticResource LabelText}"/>
+                            <TextBox x:Name="TxtAdMobAppId" Style="{StaticResource InputBox}" Text="ca-app-pub-xxxxxxxxxxxxxxxx~xxxxxxxxxx"/>
+                            <TextBlock Text="Banner Ad Unit ID" Style="{StaticResource LabelText}"/>
+                            <TextBox x:Name="TxtBannerAdUnit" Style="{StaticResource InputBox}" Text="ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx"/>
+                            <TextBlock Text="Interstitial Ad Unit ID" Style="{StaticResource LabelText}"/>
+                            <TextBox x:Name="TxtInterstitialAdUnit" Style="{StaticResource InputBox}" Text="ca-app-pub-xxxxxxxxxxxxxxxx/xxxxxxxxxx"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- KEYSTORE PAGE -->
+                    <StackPanel x:Name="PageKeystore" Visibility="Collapsed">
+                        <TextBlock Text="Signing &amp; Keystore" FontSize="18" FontWeight="Bold" Margin="0,0,0,16"/>
+                        <TextBlock Text="Signing Mode" Style="{StaticResource LabelText}"/>
+                        <ComboBox x:Name="CmbSignMode" Background="#2A2A4E" Foreground="White"
+                                  BorderBrush="#3A3A6E" Padding="8,6" FontSize="13"
+                                  SelectionChanged="CmbSignMode_Changed">
+                            <ComboBoxItem Content="Debug (auto-generated debug key)" Tag="debug" IsSelected="True"/>
+                            <ComboBoxItem Content="Generate new keystore" Tag="generate"/>
+                            <ComboBoxItem Content="Use existing keystore" Tag="upload"/>
+                            <ComboBoxItem Content="Unsigned APK" Tag="unsigned"/>
+                        </ComboBox>
+                        <StackPanel x:Name="KeystoreFields" Margin="0,12,0,0">
+                            <TextBlock Text="Keystore Path" Style="{StaticResource LabelText}" x:Name="LblKsPath"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="TxtKsPath" Style="{StaticResource InputBox}" IsReadOnly="True"/>
+                                <Button Grid.Column="1" Content="Browse" Style="{StaticResource PrimaryBtn}"
+                                        Margin="8,0,0,0" Click="BrowseKs_Click"/>
+                            </Grid>
+                            <TextBlock Text="Alias" Style="{StaticResource LabelText}"/>
+                            <TextBox x:Name="TxtKsAlias" Style="{StaticResource InputBox}" Text="mykey"/>
+                            <TextBlock Text="Keystore Password" Style="{StaticResource LabelText}"/>
+                            <PasswordBox x:Name="TxtKsPass" Background="#2A2A4E" Foreground="White"
+                                         BorderBrush="#3A3A6E" Padding="8,6" FontSize="13"/>
+                            <TextBlock Text="Key Password" Style="{StaticResource LabelText}"/>
+                            <PasswordBox x:Name="TxtKeyPass" Background="#2A2A4E" Foreground="White"
+                                         BorderBrush="#3A3A6E" Padding="8,6" FontSize="13"/>
+                        </StackPanel>
+                    </StackPanel>
+
+                    <!-- OUTPUT PAGE -->
+                    <StackPanel x:Name="PageOutput" Visibility="Collapsed">
+                        <TextBlock Text="Output Settings" FontSize="18" FontWeight="Bold" Margin="0,0,0,16"/>
+                        <TextBlock Text="Build Type" Style="{StaticResource LabelText}"/>
+                        <ComboBox x:Name="CmbBuildType" Background="#2A2A4E" Foreground="White"
+                                  BorderBrush="#3A3A6E" Padding="8,6" FontSize="13">
+                            <ComboBoxItem Content="APK" Tag="apk" IsSelected="True"/>
+                            <ComboBoxItem Content="AAB (Android App Bundle)" Tag="aab"/>
+                        </ComboBox>
+                        <TextBlock Text="Version Name" Style="{StaticResource LabelText}"/>
+                        <TextBox x:Name="TxtVersionName" Style="{StaticResource InputBox}" Text="1.0"/>
+                        <TextBlock Text="Version Code" Style="{StaticResource LabelText}"/>
+                        <TextBox x:Name="TxtVersionCode" Style="{StaticResource InputBox}" Text="1"/>
+                    </StackPanel>
+
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Log panel -->
+            <Border Grid.Row="1" Background="#0D0D1F" BorderBrush="#2A2A4E" BorderThickness="0,1,0,0">
+                <Grid Margin="12,8">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <TextBlock Text="Build Log" Foreground="#7C6AF7" FontWeight="Bold" FontSize="12"/>
+                        <ProgressBar x:Name="BuildProgress" Width="120" Height="6" Margin="16,0,0,0"
+                                     Visibility="Collapsed" IsIndeterminate="True"
+                                     Foreground="#7C6AF7" Background="#2A2A4E"/>
+                    </StackPanel>
+                    <ScrollViewer Grid.Row="1" x:Name="LogScroll" VerticalScrollBarVisibility="Auto">
+                        <TextBlock x:Name="TxtLog" Foreground="#88AACC" FontFamily="Consolas"
+                                   FontSize="11" TextWrapping="Wrap"/>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>
