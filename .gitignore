@@ -1,0 +1,18 @@
+# Build output
+bin/
+obj/
+*.user
+
+# Tools (large binaries — download separately per README)
+Html2Apk/Assets/tools/jdk/
+Html2Apk/Assets/tools/gradle/
+Html2Apk/Assets/tools/android-sdk/
+Html2Apk/Assets/tools/offline-repo/
+
+# VS
+.vs/
+*.suo
+*.userprefs
+
+# Temp
+*.tmp
