@@ -42,19 +42,14 @@ function Unzip($zip, $dest) {
     Remove-Item $zip -Force
 }
 
-# JDK 17
+# JDK 17 - SKIPPED (provide your own at Tools\jdk\)
 $JdkDir = "$ToolsDir\jdk"
 if (Test-Path "$JdkDir\bin\java.exe") {
-    Ok "JDK 17 already present"
+    Ok "JDK found at $JdkDir"
 } else {
-    Write-Host "  [1/4] Downloading JDK 17..." -ForegroundColor Yellow
-    $jdkZip = "$tmp\jdk17.zip"
-    Download "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.11%2B9/OpenJDK17U-jdk_x64_windows_hotspot_17.0.11_9.zip" $jdkZip
-    Unzip $jdkZip "$tmp\jdk17_ext"
-    $sub = Get-ChildItem "$tmp\jdk17_ext" -Directory | Select-Object -First 1
-    if ($null -eq $sub) { Die "JDK extraction failed" }
-    Move-Item $sub.FullName $JdkDir -Force
-    Ok "JDK 17 installed"
+    Write-Host "  [SKIP] JDK not found at $JdkDir\bin\java.exe" -ForegroundColor Yellow
+    Write-Host "         Download JDK 17 from https://adoptium.net and extract to:" -ForegroundColor Yellow
+    Write-Host "         $JdkDir" -ForegroundColor White
 }
 
 # Gradle 8.7
@@ -62,7 +57,7 @@ $GradleDir = "$ToolsDir\gradle"
 if (Test-Path "$GradleDir\bin\gradle.bat") {
     Ok "Gradle already present"
 } else {
-    Write-Host "  [2/4] Downloading Gradle 8.7..." -ForegroundColor Yellow
+    Write-Host "  [1/3] Downloading Gradle 8.7..." -ForegroundColor Yellow
     $gradleZip = "$tmp\gradle.zip"
     Download "https://services.gradle.org/distributions/gradle-8.7-bin.zip" $gradleZip
     Unzip $gradleZip "$tmp\gradle_ext"
@@ -82,7 +77,7 @@ $env:Path      = "$JdkDir\bin;$env:Path"
 if (Test-Path $SdkManager) {
     Ok "Android cmdline-tools already present"
 } else {
-    Write-Host "  [3/4] Downloading Android cmdline-tools..." -ForegroundColor Yellow
+    Write-Host "  [2/3] Downloading Android cmdline-tools..." -ForegroundColor Yellow
     $ctZip = "$tmp\cmdline-tools.zip"
     Download "https://dl.google.com/android/repository/commandlinetools-win-11076708_latest.zip" $ctZip
     New-Item -ItemType Directory -Force -Path $CtLatest | Out-Null
@@ -94,7 +89,7 @@ if (Test-Path $SdkManager) {
 }
 
 # SDK packages
-Write-Host "  [4/4] Installing Android platform + build-tools..." -ForegroundColor Yellow
+Write-Host "  [3/3] Installing Android platform + build-tools..." -ForegroundColor Yellow
 Log "Accepting licenses..."
 ("y`ny`ny`ny`ny`ny`ny`ny`ny`ny`n" | & "$SdkManager" --sdk_root="$SdkDir" --licenses) 2>&1 | Out-Null
 Log "Installing platforms;android-34..."
