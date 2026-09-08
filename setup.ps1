@@ -96,7 +96,7 @@ if (Test-Path $SdkManager) {
 # SDK packages
 Write-Host "  [4/4] Installing Android platform + build-tools..." -ForegroundColor Yellow
 Log "Accepting licenses..."
-for ($i = 0; $i -lt 10; $i++) { "y" } | & "$SdkManager" --sdk_root="$SdkDir" --licenses 2>&1 | Out-Null
+("y`ny`ny`ny`ny`ny`ny`ny`ny`ny`n" | & "$SdkManager" --sdk_root="$SdkDir" --licenses) 2>&1 | Out-Null
 Log "Installing platforms;android-34..."
 & "$SdkManager" --sdk_root="$SdkDir" "platforms;android-34" | Out-Null
 Log "Installing build-tools;34.0.0..."
