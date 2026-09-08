@@ -10,15 +10,17 @@ public static class GradleFileGenerator
             ? "    implementation 'com.google.android.gms:play-services-ads:23.0.0'"
             : "";
 
-        string admobMeta = cfg.AdMobEnabled
-            ? $@"        <meta-data
-            android:name=""com.google.android.gms.ads.APPLICATION_ID""
-            android:value=""{cfg.AdMobAppId}""/>"
-            : "";
-
-        return $@"plugins {{
-    id 'com.android.application'
+        return $@"buildscript {{
+    repositories {{
+        google()
+        mavenCentral()
+    }}
+    dependencies {{
+        classpath 'com.android.tools.build:gradle:8.2.2'
+    }}
 }}
+
+apply plugin: 'com.android.application'
 
 android {{
     compileSdk 34
@@ -39,6 +41,11 @@ android {{
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }}
+}}
+
+repositories {{
+    google()
+    mavenCentral()
 }}
 
 dependencies {{
