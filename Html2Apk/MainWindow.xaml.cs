@@ -2,10 +2,7 @@ using Html2Apk.BuildEngine;
 using Html2Apk.Models;
 using System.IO;
 using System.Windows;
-using WpfButton = System.Windows.Controls.WpfButton;
-using WpfCheckBox = System.Windows.Controls.WpfCheckBox;
-using WpfMessageBox = System.Windows.WpfMessageBox;
-using WpfOpenFileDialog = Microsoft.Win32.WpfOpenFileDialog;
+using System.Windows.Controls;
 
 namespace Html2Apk;
 
@@ -39,10 +36,9 @@ public partial class MainWindow : Window
         BuildPermissionsPanel();
     }
 
-    // ── Navigation ────────────────────────────────────────────────────────
     private void Nav_Click(object sender, RoutedEventArgs e)
     {
-        var btn = (WpfButton)sender;
+        var btn = (Button)sender;
         PageGeneral.Visibility     = Visibility.Collapsed;
         PagePermissions.Visibility = Visibility.Collapsed;
         PageAdMob.Visibility       = Visibility.Collapsed;
@@ -68,50 +64,52 @@ public partial class MainWindow : Window
         page.Visibility = Visibility.Visible;
     }
 
-    // ── Permissions panel ─────────────────────────────────────────────────
     private void BuildPermissionsPanel()
     {
         foreach (var (key, label) in AllPermissions)
         {
-            var cb = new WpfCheckBox
+            var cb = new CheckBox
             {
-                Content = label,
-                Tag     = key,
+                Content   = label,
+                Tag       = key,
                 Foreground = System.Windows.Media.Brushes.White,
-                Margin  = new Thickness(0, 0, 16, 8),
+                Margin    = new Thickness(0, 0, 16, 8),
                 IsChecked = key == "internet"
             };
             PermPanel.Children.Add(cb);
         }
     }
 
-    // ── File browsers ─────────────────────────────────────────────────────
     private void BrowseHtml_Click(object sender, RoutedEventArgs e)
     {
-        var dlg = new WpfOpenFileDialog { Filter = "HTML files|*.html;*.htm|All files|*.*" };
+        var dlg = new Microsoft.Win32.OpenFileDialog { Filter = "HTML files|*.html;*.htm|All files|*.*" };
         if (dlg.ShowDialog() == true) TxtHtml.Text = dlg.FileName;
     }
 
     private void BrowseIcon_Click(object sender, RoutedEventArgs e)
     {
-        var dlg = new WpfOpenFileDialog { Filter = "PNG files|*.png" };
+        var dlg = new Microsoft.Win32.OpenFileDialog { Filter = "PNG files|*.png" };
         if (dlg.ShowDialog() == true) TxtIcon.Text = dlg.FileName;
     }
 
     private void BrowseOutput_Click(object sender, RoutedEventArgs e)
     {
-        var dlg = new System.Windows.Forms.FolderBrowserDialog { Description = "Select output folder" };
-        if (dlg.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-            TxtOutput.Text = dlg.SelectedPath;
+        var dlg = new Microsoft.Win32.OpenFileDialog
+        {
+            Title = "Select output folder — pick any file inside it",
+            CheckFileExists = false,
+            FileName = "Select Folder"
+        };
+        if (dlg.ShowDialog() == true)
+            TxtOutput.Text = Path.GetDirectoryName(dlg.FileName)!;
     }
 
     private void BrowseKs_Click(object sender, RoutedEventArgs e)
     {
-        var dlg = new WpfOpenFileDialog { Filter = "Keystore files|*.jks;*.keystore|All files|*.*" };
+        var dlg = new Microsoft.Win32.OpenFileDialog { Filter = "Keystore files|*.jks;*.keystore|All files|*.*" };
         if (dlg.ShowDialog() == true) TxtKsPath.Text = dlg.FileName;
     }
 
-    // ── AdMob toggle ──────────────────────────────────────────────────────
     private void ChkAdMob_Changed(object sender, RoutedEventArgs e)
     {
         bool on = ChkAdMob.IsChecked == true;
@@ -119,7 +117,6 @@ public partial class MainWindow : Window
         AdMobFields.Opacity   = on ? 1.0 : 0.5;
     }
 
-    // ── Keystore mode ─────────────────────────────────────────────────────
     private void CmbSignMode_Changed(object sender, SelectionChangedEventArgs e)
     {
         if (KeystoreFields == null) return;
@@ -129,7 +126,6 @@ public partial class MainWindow : Window
             TxtKsPath.IsReadOnly = tag != "upload";
     }
 
-    // ── Build ─────────────────────────────────────────────────────────────
     private async void BtnBuild_Click(object sender, RoutedEventArgs e)
     {
         var cfg = CollectConfig();
@@ -140,20 +136,17 @@ public partial class MainWindow : Window
         TxtLog.Text = "";
         Log("🚀 Starting build...");
 
-        var cts = new CancellationTokenSource();
         try
         {
             var engine = new BuildOrchestrator(cfg, _toolsDir, Log);
-            var apk    = await engine.BuildAsync(cts.Token);
+            var apk    = await engine.BuildAsync();
             Log($"\n✅ Done! APK saved to:\n{apk}");
-            WpfMessageBox.Show($"Build complete!\n{apk}", "Success",
-                MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show($"Build complete!\n{apk}", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
         }
         catch (Exception ex)
         {
             Log($"\n❌ Build failed: {ex.Message}");
-            WpfMessageBox.Show($"Build failed:\n{ex.Message}", "Error",
-                MessageBoxButton.OK, MessageBoxImage.Error);
+            MessageBox.Show($"Build failed:\n{ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
         finally
         {
@@ -165,47 +158,47 @@ public partial class MainWindow : Window
     private BuildConfig CollectConfig()
     {
         var perms = new HashSet<string>();
-        foreach (WpfCheckBox cb in PermPanel.Children)
+        foreach (CheckBox cb in PermPanel.Children)
             if (cb.IsChecked == true) perms.Add((string)cb.Tag);
 
-        var signTag = ((ComboBoxItem)CmbSignMode.SelectedItem)?.Tag?.ToString() ?? "debug";
+        var signTag      = ((ComboBoxItem)CmbSignMode.SelectedItem)?.Tag?.ToString() ?? "debug";
         var buildTypeTag = ((ComboBoxItem)CmbBuildType.SelectedItem)?.Tag?.ToString() ?? "apk";
 
         return new BuildConfig
         {
-            AppName       = TxtAppName.Text.Trim(),
-            PackageName   = TxtPackage.Text.Trim(),
-            HtmlFilePath  = TxtHtml.Text.Trim(),
-            IconFilePath  = TxtIcon.Text.Trim(),
-            OutputDir     = TxtOutput.Text.Trim(),
-            Permissions   = perms,
-            AdMobEnabled          = ChkAdMob.IsChecked == true,
-            AdMobAppId            = TxtAdMobAppId.Text.Trim(),
-            BannerAdUnitId        = TxtBannerAdUnit.Text.Trim(),
-            InterstitialAdUnitId  = TxtInterstitialAdUnit.Text.Trim(),
-            SigningMode    = signTag,
-            KeystorePath   = TxtKsPath.Text.Trim(),
-            KeystoreAlias  = TxtKsAlias.Text.Trim(),
+            AppName      = TxtAppName.Text.Trim(),
+            PackageName  = TxtPackage.Text.Trim(),
+            HtmlFilePath = TxtHtml.Text.Trim(),
+            IconFilePath = TxtIcon.Text.Trim(),
+            OutputDir    = TxtOutput.Text.Trim(),
+            Permissions  = perms,
+            AdMobEnabled         = ChkAdMob.IsChecked == true,
+            AdMobAppId           = TxtAdMobAppId.Text.Trim(),
+            BannerAdUnitId       = TxtBannerAdUnit.Text.Trim(),
+            InterstitialAdUnitId = TxtInterstitialAdUnit.Text.Trim(),
+            SigningMode      = signTag,
+            KeystorePath     = TxtKsPath.Text.Trim(),
+            KeystoreAlias    = TxtKsAlias.Text.Trim(),
             KeystorePassword = TxtKsPass.Password,
             KeyPassword      = TxtKeyPass.Password,
-            BuildType      = buildTypeTag,
+            BuildType        = buildTypeTag,
         };
     }
 
     private bool Validate(BuildConfig cfg)
     {
         if (string.IsNullOrWhiteSpace(cfg.HtmlFilePath) || !File.Exists(cfg.HtmlFilePath))
-        { WpfMessageBox.Show("Please select a valid HTML file.", "Validation"); return false; }
+        { MessageBox.Show("Please select a valid HTML file.", "Validation"); return false; }
         if (string.IsNullOrWhiteSpace(cfg.OutputDir))
-        { WpfMessageBox.Show("Please select an output folder.", "Validation"); return false; }
+        { MessageBox.Show("Please select an output folder.", "Validation"); return false; }
         if (string.IsNullOrWhiteSpace(cfg.AppName))
-        { WpfMessageBox.Show("App name is required.", "Validation"); return false; }
+        { MessageBox.Show("App name is required.", "Validation"); return false; }
         if (!System.Text.RegularExpressions.Regex.IsMatch(cfg.PackageName, @"^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$"))
-        { WpfMessageBox.Show("Invalid package name (e.g. com.example.myapp).", "Validation"); return false; }
+        { MessageBox.Show("Invalid package name (e.g. com.example.myapp).", "Validation"); return false; }
         if (cfg.SigningMode is "generate" or "upload" && cfg.KeystorePassword.Length < 6)
-        { WpfMessageBox.Show("Keystore password must be at least 6 characters.", "Validation"); return false; }
+        { MessageBox.Show("Keystore password must be at least 6 characters.", "Validation"); return false; }
         if (cfg.AdMobEnabled && string.IsNullOrWhiteSpace(cfg.AdMobAppId))
-        { WpfMessageBox.Show("AdMob App ID is required when AdMob is enabled.", "Validation"); return false; }
+        { MessageBox.Show("AdMob App ID is required when AdMob is enabled.", "Validation"); return false; }
         return true;
     }
 
@@ -218,4 +211,3 @@ public partial class MainWindow : Window
         });
     }
 }
-
