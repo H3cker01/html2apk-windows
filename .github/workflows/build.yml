@@ -1,0 +1,97 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Copy JDK into tools
+        shell: pwsh
+        run: |
+          $jdkSrc = "$env:JAVA_HOME"
+          $jdkDst = "Html2Apk\Assets\tools\jdk"
+          New-Item -ItemType Directory -Force -Path $jdkDst | Out-Null
+          Copy-Item "$jdkSrc\*" $jdkDst -Recurse -Force
+          Write-Host "JDK copied from $jdkSrc"
+
+      - name: Download Gradle 8.7
+        shell: pwsh
+        run: |
+          $dst = "Html2Apk\Assets\tools\gradle"
+          if (Test-Path "$dst\bin\gradle.bat") { Write-Host "Gradle cached"; exit 0 }
+          Invoke-WebRequest "https://services.gradle.org/distributions/gradle-8.7-bin.zip" -OutFile gradle.zip -UseBasicParsing
+          Expand-Archive gradle.zip -DestinationPath gradle_ext -Force
+          $sub = Get-ChildItem gradle_ext -Directory | Select-Object -First 1
+          Move-Item $sub.FullName $dst -Force
+          Remove-Item gradle.zip, gradle_ext -Recurse -Force
+
+      - name: Setup Android SDK
+        shell: pwsh
+        run: |
+          $sdkDir  = "Html2Apk\Assets\tools\android-sdk"
+          $ctDir   = "$sdkDir\cmdline-tools\latest"
+          $sdkMgr  = "$ctDir\bin\sdkmanager.bat"
+          if (-not (Test-Path $sdkMgr)) {
+            Invoke-WebRequest "https://dl.google.com/android/repository/commandlinetools-win-11076708_latest.zip" -OutFile ct.zip -UseBasicParsing
+            New-Item -ItemType Directory -Force -Path $ctDir | Out-Null
+            Expand-Archive ct.zip -DestinationPath ct_ext -Force
+            Get-ChildItem ct_ext\cmdline-tools | ForEach-Object { Move-Item $_.FullName $ctDir -Force }
+            Remove-Item ct.zip, ct_ext -Recurse -Force
+          }
+          "y`ny`ny`ny`ny`ny`n" | & "$sdkMgr" --sdk_root="$sdkDir" --licenses 2>&1 | Out-Null
+          & "$sdkMgr" --sdk_root="$sdkDir" "platforms;android-34" "build-tools;34.0.0" | Out-Null
+
+      - name: Create apksigner.bat
+        shell: pwsh
+        run: |
+          $jdk = (Resolve-Path "Html2Apk\Assets\tools\jdk").Path
+          $jar = (Resolve-Path "Html2Apk\Assets\tools\android-sdk\build-tools\34.0.0\lib\apksigner.jar").Path
+          $dst = "Html2Apk\Assets\tools\build-tools"
+          New-Item -ItemType Directory -Force -Path $dst | Out-Null
+          Set-Content "$dst\apksigner.bat" "@echo off`r`n`"$jdk\bin\java.exe`" -jar `"$jar`" %*" -Encoding ASCII
+
+      - name: Publish (self-contained EXE)
+        shell: pwsh
+        run: |
+          dotnet publish Html2Apk/Html2Apk.csproj `
+            -c Release `
+            -r win-x64 `
+            --self-contained true `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -o publish
+
+      - name: Zip release
+        shell: pwsh
+        run: |
+          Compress-Archive -Path publish\* -DestinationPath Html2Apk-Windows.zip -Force
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name || 'v1.0.0' }}
+          name: HTML2Apk for Windows ${{ github.ref_name || 'v1.0.0' }}
+          files: Html2Apk-Windows.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
