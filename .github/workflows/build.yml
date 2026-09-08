@@ -31,7 +31,6 @@ jobs:
           $dst = "Html2Apk\Assets\tools\jdk"
           New-Item -ItemType Directory -Force -Path $dst | Out-Null
           Copy-Item "$env:JAVA_HOME\*" $dst -Recurse -Force
-          Write-Host "JDK copied"
 
       - name: Download Gradle 8.7
         shell: pwsh
@@ -42,7 +41,6 @@ jobs:
           $sub = Get-ChildItem gradle_ext -Directory | Select-Object -First 1
           Move-Item $sub.FullName $dst -Force
           Remove-Item gradle.zip, gradle_ext -Recurse -Force
-          Write-Host "Gradle installed"
 
       - name: Setup Android SDK
         shell: pwsh
@@ -57,7 +55,6 @@ jobs:
           Remove-Item ct.zip, ct_ext -Recurse -Force
           "y`ny`ny`ny`ny`ny`n" | & "$sdkMgr" --sdk_root="$sdkDir" --licenses 2>&1 | Out-Null
           & "$sdkMgr" --sdk_root="$sdkDir" "platforms;android-34" "build-tools;34.0.0" | Out-Null
-          Write-Host "Android SDK installed"
 
       - name: Create apksigner.bat
         shell: pwsh
@@ -67,9 +64,8 @@ jobs:
           $dst = "Html2Apk\Assets\tools\build-tools"
           New-Item -ItemType Directory -Force -Path $dst | Out-Null
           Set-Content "$dst\apksigner.bat" "@echo off`r`n`"$jdk\bin\java.exe`" -jar `"$jar`" %*" -Encoding ASCII
-          Write-Host "apksigner.bat created"
 
-      - name: Build (framework-dependent folder publish)
+      - name: Build
         shell: pwsh
         run: |
           dotnet publish Html2Apk/Html2Apk.csproj `
@@ -78,20 +74,22 @@ jobs:
             --self-contained true `
             -p:PublishSingleFile=false `
             -o publish
-          Write-Host "Build complete"
 
       - name: Zip release
         shell: pwsh
         run: |
           Compress-Archive -Path publish\* -DestinationPath Html2Apk-Windows.zip -Force
-          Write-Host "Zipped"
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.ref_name != 'refs/heads/main' && github.ref_name || 'v1.0.0' }}
-          name: HTML2Apk for Windows
-          files: Html2Apk-Windows.zip
-          generate_release_notes: true
+      - name: Create Release and Upload
+        shell: pwsh
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: |
+          $headers = @{ Authorization = "token $env:GH_PAT"; "Content-Type" = "application/json" }
+          $tag = "v1.0.${{ github.run_number }}"
+          $body = @{ tag_name = $tag; name = "HTML2Apk for Windows $tag"; body = "Automated release"; target_commitish = "main" } | ConvertTo-Json
+          $release = Invoke-RestMethod -Uri "https://api.github.com/repos/H3cker01/html2apk-windows/releases" -Method Post -Headers $headers -Body $body
+          $uploadUrl = $release.upload_url -replace '\{.*\}', ''
+          $uploadHeaders = @{ Authorization = "token $env:GH_PAT"; "Content-Type" = "application/zip" }
+          Invoke-RestMethod -Uri "${uploadUrl}?name=Html2Apk-Windows.zip" -Method Post -Headers $uploadHeaders -InFile "Html2Apk-Windows.zip"
+          Write-Host "Release published: $($release.html_url)"
