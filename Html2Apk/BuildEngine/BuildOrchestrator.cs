@@ -14,7 +14,7 @@ public class BuildOrchestrator
 
     // Tools paths — all bundled inside the app in Assets/tools/
     private string GradleWrapper => Path.Combine(_toolsDir, "gradle", "bin", "gradle.bat");
-    private string ApkSignerJar  => Path.Combine(_toolsDir, "android-sdk", "build-tools", "34.0.0", "lib", "apksigner.jar");
+    private string ApkSignerJar  => Path.Combine(_toolsDir, "android-sdk", "build-tools", "35.0.0", "lib", "apksigner.jar");
     private string JavaExe       => Path.Combine(_toolsDir, "jdk", "bin", "java.exe");
     private string Keytool       => Path.Combine(_toolsDir, "jdk", "bin", "keytool.exe");
 
