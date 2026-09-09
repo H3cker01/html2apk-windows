@@ -14,7 +14,8 @@ public class BuildOrchestrator
 
     // Tools paths — all bundled inside the app in Assets/tools/
     private string GradleWrapper => Path.Combine(_toolsDir, "gradle", "bin", "gradle.bat");
-    private string ApkSigner     => Path.Combine(_toolsDir, "build-tools", "apksigner.bat");
+    private string ApkSignerJar  => Path.Combine(_toolsDir, "android-sdk", "build-tools", "34.0.0", "lib", "apksigner.jar");
+    private string JavaExe       => Path.Combine(_toolsDir, "jdk", "bin", "java.exe");
     private string Keytool       => Path.Combine(_toolsDir, "jdk", "bin", "keytool.exe");
 
     public BuildOrchestrator(BuildConfig cfg, string toolsDir, Action<string> log)
@@ -99,8 +100,8 @@ public class BuildOrchestrator
             {
                 finalApk = Path.Combine(_cfg.OutputDir, $"{_cfg.PackageName}.apk");
                 _log("✍️ Signing APK...");
-                await RunAsync(ApkSigner,
-                    $"sign --ks \"{ksPath}\" --ks-pass pass:{ksPass} --key-pass pass:{keyPass} --ks-key-alias {alias} --out \"{finalApk}\" \"{unsignedApk}\"",
+                await RunAsync(JavaExe,
+                    $"-jar \"{ApkSignerJar}\" sign --ks \"{ksPath}\" --ks-pass pass:{ksPass} --key-pass pass:{keyPass} --ks-key-alias {alias} --out \"{finalApk}\" \"{unsignedApk}\"",
                     workDir, null, ct);
                 _log($"✅ Signed APK: {finalApk}");
             }
