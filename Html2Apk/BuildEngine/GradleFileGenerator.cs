@@ -23,12 +23,12 @@ public static class GradleFileGenerator
 apply plugin: 'com.android.application'
 
 android {{
-    compileSdk 35
+    compileSdk 36
     namespace '{cfg.PackageName}'
     defaultConfig {{
         applicationId '{cfg.PackageName}'
         minSdk 21
-        targetSdk 35
+        targetSdk 36
         versionCode 1
         versionName '1.0'
     }}
@@ -100,7 +100,7 @@ include ':app'
 
         return $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <manifest xmlns:android=""http://schemas.android.com/apk/res/android"">
-    <uses-sdk android:minSdkVersion=""21"" android:targetSdkVersion=""35""/>
+    <uses-sdk android:minSdkVersion=""21"" android:targetSdkVersion=""36""/>
     {permXml}
     <application android:label=""{cfg.AppName}"" android:icon=""@mipmap/ic_launcher""
         android:theme=""@android:style/Theme.NoTitleBar.Fullscreen""
