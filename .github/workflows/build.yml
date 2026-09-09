@@ -56,15 +56,6 @@ jobs:
           "y`ny`ny`ny`ny`ny`n" | & "$sdkMgr" --sdk_root="$sdkDir" --licenses 2>&1 | Out-Null
           & "$sdkMgr" --sdk_root="$sdkDir" "platforms;android-34" "build-tools;34.0.0" | Out-Null
 
-      - name: Create apksigner.bat
-        shell: pwsh
-        run: |
-          $jdk = (Resolve-Path "Html2Apk\Assets\tools\jdk").Path
-          $jar = (Resolve-Path "Html2Apk\Assets\tools\android-sdk\build-tools\34.0.0\lib\apksigner.jar").Path
-          $dst = "Html2Apk\Assets\tools\build-tools"
-          New-Item -ItemType Directory -Force -Path $dst | Out-Null
-          Set-Content "$dst\apksigner.bat" "@echo off`r`n`"$jdk\bin\java.exe`" -jar `"$jar`" %*" -Encoding ASCII
-
       - name: Build
         shell: pwsh
         run: |
@@ -72,7 +63,8 @@ jobs:
             -c Release `
             -r win-x64 `
             --self-contained true `
-            -p:PublishSingleFile=false `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
             -o publish
 
       - name: Zip release
