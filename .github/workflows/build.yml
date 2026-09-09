@@ -54,7 +54,7 @@ jobs:
           Get-ChildItem ct_ext\cmdline-tools | ForEach-Object { Move-Item $_.FullName $ctDir -Force }
           Remove-Item ct.zip, ct_ext -Recurse -Force
           "y`ny`ny`ny`ny`ny`n" | & "$sdkMgr" --sdk_root="$sdkDir" --licenses 2>&1 | Out-Null
-          & "$sdkMgr" --sdk_root="$sdkDir" "platforms;android-34" "build-tools;34.0.0" | Out-Null
+          & "$sdkMgr" --sdk_root="$sdkDir" "platforms;android-35" "build-tools;35.0.0" | Out-Null
 
       - name: Build
         shell: pwsh
