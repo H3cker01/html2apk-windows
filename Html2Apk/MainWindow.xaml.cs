@@ -104,6 +104,26 @@ public partial class MainWindow : Window
             TxtOutput.Text = Path.GetDirectoryName(dlg.FileName)!;
     }
 
+    private void AddExtraFiles_Click(object sender, RoutedEventArgs e)
+    {
+        var dlg = new Microsoft.Win32.OpenFileDialog
+        {
+            Title = "Select files to bundle",
+            Multiselect = true,
+            Filter = "All files|*.*"
+        };
+        if (dlg.ShowDialog() != true) return;
+        foreach (var path in dlg.FileNames)
+            if (!LstExtraFiles.Items.Contains(path))
+                LstExtraFiles.Items.Add(path);
+    }
+
+    private void RemoveExtraFile_Click(object sender, RoutedEventArgs e)
+    {
+        var selected = LstExtraFiles.SelectedItem;
+        if (selected != null) LstExtraFiles.Items.Remove(selected);
+    }
+
     private void BrowseKs_Click(object sender, RoutedEventArgs e)
     {
         var dlg = new Microsoft.Win32.OpenFileDialog { Filter = "Keystore files|*.jks;*.keystore|All files|*.*" };
@@ -172,6 +192,7 @@ public partial class MainWindow : Window
             IconFilePath = TxtIcon.Text.Trim(),
             OutputDir    = TxtOutput.Text.Trim(),
             Permissions  = perms,
+            AdditionalFiles  = LstExtraFiles.Items.Cast<string>().ToList(),
             AdMobEnabled         = ChkAdMob.IsChecked == true,
             AdMobAppId           = TxtAdMobAppId.Text.Trim(),
             BannerAdUnitId       = TxtBannerAdUnit.Text.Trim(),
