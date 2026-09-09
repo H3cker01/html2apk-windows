@@ -119,6 +119,25 @@
                             <Button Grid.Column="1" Content="Browse" Style="{StaticResource PrimaryBtn}"
                                     Margin="8,0,0,0" Click="BrowseOutput_Click"/>
                         </Grid>
+                        <TextBlock Text="Extra Files (JS, CSS, images, fonts…)" Style="{StaticResource LabelText}"/>
+                        <TextBlock Text="Access via: file:///android_asset/&lt;filename&gt;"
+                                   Foreground="#6B6B9B" FontSize="11" Margin="0,0,0,6"/>
+                        <ListBox x:Name="LstExtraFiles" Background="#2A2A4E" Foreground="White"
+                                 BorderBrush="#3A3A6E" MinHeight="60" MaxHeight="120"
+                                 Margin="0,0,0,6">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" FontFamily="Consolas" FontSize="12" Foreground="#4ADE80"/>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Content="+ Add Files" Style="{StaticResource PrimaryBtn}"
+                                    Padding="12,6" FontSize="12" Click="AddExtraFiles_Click"/>
+                            <Button Content="Remove Selected" Style="{StaticResource PrimaryBtn}"
+                                    Padding="12,6" FontSize="12" Margin="8,0,0,0"
+                                    Background="#3A3A6E" Click="RemoveExtraFile_Click"/>
+                        </StackPanel>
                     </StackPanel>
 
                     <!-- PERMISSIONS PAGE -->
